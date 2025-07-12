@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>نظام الدخول الآمن</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #00796B;
+      --primary-dark: #004d40;
+      --secondary-color: #4CAF50;
+      --accent-color: #FF9800;
+      --light-color: #f5f5f5;
+      --dark-color: #333;
+      --error-color: #f44336;
+      --success-color: #4CAF50;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    .overlay {
+      background: linear-gradient(145deg, #ffffff, #f0f0f0);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .overlay:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .overlay::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      border-radius: 15px 15px 0 0;
+    }
+    
+    .overlay h2 {
+      color: var(--primary-dark);
+      margin-bottom: 30px;
+      font-size: 28px;
+      position: relative;
+      padding-bottom: 15px;
+      font-weight: 700;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .overlay h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--accent-color);
+      border-radius: 3px;
+    }
+    
+    .input-group {
+      margin-bottom: 25px;
+      text-align: right;
+      position: relative;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: var(--dark-color);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .input-group label i {
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+    
+    .input-container {
+      position: relative;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 14px 50px 14px 14px;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f9f9f9;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .input-group input:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.2);
+      background: #fff;
+    }
+    
+    .input-icon {
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      color: #777;
+      font-size: 18px;
+      pointer-events: none;
+    }
+    
+    .toggle-password {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 18px;
+      user-select: none;
+      color: #777;
+      transition: color 0.3s;
+      z-index: 2;
+    }
+    
+    .toggle-password:hover {
+      color: var(--primary-color);
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    button {
+      background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 17px;
+      width: 100%;
+      transition: all 0.3s;
+      font-weight: bold;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #changePasswordBtn {
+      background: linear-gradient(to right, #607D8B, #37474F);
+    }
+    
+    #savePasswordBtn {
+      background: linear-gradient(to right, var(--secondary-color), #2E7D32);
+      margin-top: 20px;
+    }
+    
+    .message {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .error-message {
+      background-color: #ffebee;
+      color: var(--error-color);
+      border: 1px solid #ffcdd2;
+    }
+    
+    .success-message {
+      background-color: #e8f5e9;
+      color: var(--success-color);
+      border: 1px solid #c8e6c9;
+    }
+    
+    .password-rules {
+      background-color: #f5f5f5;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 14px;
+      text-align: right;
+      border: 1px solid #eee;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+    }
+    
+    .password-rules ul {
+      padding-right: 20px;
+      margin: 10px 0;
+      list-style-type: none;
+    }
+    
+    .password-rules li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-right: 25px;
+    }
+    
+    .password-rules li::before {
+      content: "•";
+      color: var(--primary-color);
+      font-size: 20px;
+      position: absolute;
+      right: 0;
+      top: -3px;
+    }
+    
+    .password-strength {
+      height: 10px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      margin-top: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .strength-meter {
+      height: 100%;
+      width: 0;
+      transition: width 0.5s, background-color 0.5s;
+      border-radius: 5px;
+    }
+    
+    .strength-text {
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: right;
+      font-weight: 500;
+    }
+    
+    .security-info {
+      margin-top: 25px;
+      padding: 15px;
+      background: linear-gradient(to right, #e3f2fd, #bbdefb);
+      border-radius: 10px;
+      border-left: 4px solid #2196F3;
+      text-align: center;
+      font-size: 14px;
+      color: #0d47a1;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .logo {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .logo i {
+      font-size: 55px;
+      color: var(--primary-color);
+      background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    @media (max-width: 480px) {
+      .overlay {
+        padding: 30px 20px;
+      }
+      
+      .overlay h2 {
+        font-size: 24px;
+      }
+      
+      .input-group input {
+        padding: 12px 45px 12px 12px;
+      }
+      
+      .toggle-password {
+        left: 10px;
+      }
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(0, 121, 107, 0.4); }
+      70% { box-shadow: 0 0 0 12px rgba(0, 121, 107, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 121, 107, 0); }
+    }
+    
+    .shake {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-10px); }
+      40%, 80% { transform: translateX(10px); }
+    }
+    
+    .fade-out {
+      animation: fadeOut 0.5s forwards;
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; transform: translateY(10px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay pulse">
+    <div class="logo">
+      <i class="fas fa-shield-alt"></i>
+    </div>
+    <h2>نظام الدخول الآمن</h2>
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="username"><i class="fas fa-user"></i> اسم المستخدم:</label>
+        <div class="input-container">
+          <input type="text" id="username" required placeholder="أدخل اسم المستخدم" />
+          <i class="fas fa-user input-icon"></i>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="password"><i class="fas fa-lock"></i> كلمة المرور:</label>
+        <div class="input-container">
+          <input type="password" id="password" required placeholder="أدخل كلمة المرور" />
+          <span class="toggle-password" id="togglePassword">
+            <i class="fas fa-eye"></i>
+          </span>
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button type="submit">
+          <i class="fas fa-sign-in-alt"></i> دخول
+        </button>
+        <button type="button" id="changePasswordBtn">
+          <i class="fas fa-edit"></i> تعديل كلمة المرور
+        </button>
+      </div>
+
+      <div id="changeBox" class="input-group" style="display:none;">
+        <label for="newPassword"><i class="fas fa-key"></i> كلمة المرور الجديدة:</label>
+        <div class="input-container">
+          <input type="password" id="newPassword" placeholder="أدخل كلمة المرور الجديدة" />
+          <span class="toggle-password" id="toggleNewPassword">
+            <i class="fas fa-eye"></i>
+          </span>
+        </div>
+        
+        <div class="password-rules">
+          <strong>متطلبات كلمة المرور:</strong>
+          <ul>
+            <li>8 أحرف على الأقل</li>
+            <li>تحتوي على رقم واحد على الأقل</li>
+            <li>تحتوي على حرف كبير (A-Z)</li>
+            <li>تحتوي على رمز خاص (@, #, $, إلخ)</li>
+          </ul>
+        </div>
+        
+        <div class="password-strength">
+          <div class="strength-meter" id="strengthMeter"></div>
+        </div>
+        <div class="strength-text" id="strengthText">قوة كلمة المرور: ضعيفة</div>
+        
+        <button type="button" id="savePasswordBtn">
+          <i class="fas fa-save"></i> حفظ الكلمة الجديدة
+        </button>
+      </div>
+
+      <div id="errorMessage" class="message error-message">
+        <i class="fas fa-exclamation-circle"></i> اسم المستخدم أو كلمة المرور غير صحيحة
+      </div>
+      
+      <div id="successMessage" class="message success-message">
+        <i class="fas fa-check-circle"></i> تم تعديل كلمة المرور بنجاح!
+      </div>
+      
+      <div class="security-info">
+        <i class="fas fa-shield-alt"></i> نظام الدخول الآمن يحمي بياناتك باستخدام تقنيات التشفير المتقدمة
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // 👁 عرض وإخفاء كلمة المرور الأساسية
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordField = document.getElementById('password');
+    togglePassword.addEventListener('click', () => {
+      const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordField.setAttribute('type', type);
+      togglePassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    // 👁 عرض وإخفاء كلمة المرور الجديدة
+    const toggleNewPassword = document.getElementById('toggleNewPassword');
+    const newPasswordField = document.getElementById('newPassword');
+    toggleNewPassword.addEventListener('click', () => {
+      const type = newPasswordField.getAttribute('type') === 'password' ? 'text' : 'password';
+      newPasswordField.setAttribute('type', type);
+      toggleNewPassword.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    });
+
+    //  ‍💻 بيانات المستخدمين الأساسية
+    const defaultUsers = {
+      "عبدالله": {
+        password: "2025",
+        url: "https://docs.google.com/spreadsheets/d/1vCHq04cFK6OtgpX6TCujqJfblmv2OasOb4rcWYBwav4/edit?gid=1876622398#gid=1876622398"
+      },
+      "سامية": {
+        password: "2025",
+        url: "https://docs.google.com/spreadsheets/d/1ldz2uA5b-WN-sY69jE0z-bAN_s6x7Tqwk45mPcF-J70/edit?gid=1876622398#gid=1876622398"
+      },
+      "ابوبكر": {
+        password: "2025",
+        url: "https://docs.google.com/spreadsheets/d/1aiae5F0Q0uOyD4SVDkuL00JqWZ-sQdMgxBCG8GOjJnw/edit?gid=1876622398#gid=1876622398"
+      }
+    };
+
+    // 🔒 استرجاع بيانات المستخدمين من localStorage أو استخدام البيانات الأساسية
+    function getUsers() {
+      const savedUsers = localStorage.getItem('users');
+      return savedUsers ? JSON.parse(savedUsers) : {...defaultUsers};
+    }
+
+    // 💾 حفظ بيانات المستخدمين في localStorage
+    function saveUsers(users) {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    const loginForm = document.getElementById('loginForm');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const changeBox = document.getElementById('changeBox');
+    const savePasswordBtn = document.getElementById('savePasswordBtn');
+    const strengthMeter = document.getElementById('strengthMeter');
+    const strengthText = document.getElementById('strengthText');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+
+    // 🟢 تسجيل الدخول
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const users = getUsers();
+      
+      if (users[username] && users[username].password === password) {
+        // إضافة تأثير قبل التوجيه
+        document.querySelector('.overlay').classList.add('fade-out');
+        setTimeout(() => {
+          // مسح بيانات الإدخال
+          document.getElementById('username').value = '';
+          document.getElementById('password').value = '';
+          
+          window.location.href = users[username].url;
+        }, 500);
+      } else {
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        
+        // تأثير اهتزاز عند خطأ
+        loginForm.classList.add('shake');
+        setTimeout(() => {
+          loginForm.classList.remove('shake');
+        }, 500);
+      }
+    });
+
+    // ✏️ عرض تعديل كلمة المرور
+    changePasswordBtn.addEventListener('click', function () {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const users = getUsers();
+      
+      if (users[username] && users[username].password === password) {
+        changeBox.style.display = 'block';
+        errorMessage.style.display = 'none';
+        successMessage.style.display = 'none';
+        
+        // تمرير إلى حقل كلمة المرور الجديدة
+        setTimeout(() => {
+          newPasswordField.focus();
+        }, 300);
+      } else {
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        
+        // تأثير اهتزاز عند خطأ
+        loginForm.classList.add('shake');
+        setTimeout(() => {
+          loginForm.classList.remove('shake');
+        }, 500);
+      }
+    });
+
+    // 📊 التحقق من قوة كلمة المرور
+    newPasswordField.addEventListener('input', function() {
+      const password = this.value;
+      let strength = 0;
+      let color = '';
+      let text = '';
+      
+      // التحقق من القواعد
+      if (password.length >= 8) strength += 25;
+      if (/\d/.test(password)) strength += 25;
+      if (/[A-Z]/.test(password)) strength += 25;
+      if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 25;
+      
+      // تحديث العداد والنص
+      strengthMeter.style.width = `${strength}%`;
+      
+      if (strength === 0) {
+        color = '#f44336';
+        text = 'ضعيفة جدًا';
+      } else if (strength <= 50) {
+        color = '#ff9800';
+        text = 'ضعيفة';
+      } else if (strength <= 75) {
+        color = '#4CAF50';
+        text = 'جيدة';
+      } else {
+        color = '#00796B';
+        text = 'قوية جدًا';
+      }
+      
+      strengthMeter.style.backgroundColor = color;
+      strengthText.textContent = `قوة كلمة المرور: ${text}`;
+      strengthText.style.color = color;
+    });
+
+    // 📩 حفظ كلمة المرور الجديدة بشكل دائم
+    savePasswordBtn.addEventListener('click', function () {
+      const username = document.getElementById('username').value;
+      const newPassword = newPasswordField.value.trim();
+      
+      if (newPassword.length < 8) {
+        showAlert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
+        return;
+      }
+      
+      if (!/\d/.test(newPassword)) {
+        showAlert('كلمة المرور يجب أن تحتوي على رقم واحد على الأقل');
+        return;
+      }
+      
+      if (!/[A-Z]/.test(newPassword)) {
+        showAlert('كلمة المرور يجب أن تحتوي على حرف كبير (A-Z)');
+        return;
+      }
+      
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) {
+        showAlert('كلمة المرور يجب أن تحتوي على رمز خاص (@, #, $, إلخ)');
+        return;
+      }
+      
+      const users = getUsers();
+      
+      if (users[username]) {
+        // تحديث كلمة المرور
+        users[username].password = newPassword;
+        
+        // حفظ التغييرات في localStorage
+        saveUsers(users);
+        
+        // إظهار رسالة النجاح
+        successMessage.style.display = 'block';
+        errorMessage.style.display = 'none';
+        
+        // إضافة تأثير للنجاح
+        successMessage.classList.add('pulse');
+        
+        // إخفاء صندوق التعديل بعد التأخير
+        setTimeout(() => {
+          changeBox.style.display = 'none';
+          newPasswordField.value = '';
+          strengthMeter.style.width = '0%';
+          strengthText.textContent = 'قوة كلمة المرور: ضعيفة';
+          strengthText.style.color = '#666';
+          successMessage.classList.remove('pulse');
+          
+          // مسح بيانات الإدخال
+          document.getElementById('username').value = '';
+          document.getElementById('password').value = '';
+        }, 2000);
+        
+        // إرسال إلى Google Sheets (استبدل بالرابط الفعلي للـ Web App)
+        fetch("https://script.google.com/macros/s/AKfycbwZq9zNZOlLJHst6wiHtHtQoeA74cnQ8Vjv3iVr1v2vOuLKkaFY2RRYy0EzwotBtEsd/exec", {
+          method: "POST",
+          body: new URLSearchParams({
+            username: username,
+            newPassword: newPassword
+          })
+        })
+        .then(response => response.text())
+        .then(data => {
+          console.log("تم إرسال التعديل إلى Google Sheets: " + data);
+        })
+        .catch(error => {
+          console.log("حدث خطأ أثناء الإرسال: " + error.message);
+        });
+        
+      } else {
+        showAlert('اسم المستخدم غير صحيح');
+      }
+    });
+    
+    // وظيفة لعرض التنبيهات
+    function showAlert(message) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'message error-message';
+      alertDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.left = '50%';
+      alertDiv.style.transform = 'translateX(-50%)';
+      alertDiv.style.zIndex = '1000';
+      alertDiv.style.maxWidth = '90%';
+      alertDiv.style.width = 'auto';
+      alertDiv.style.padding = '15px 25px';
+      alertDiv.style.borderRadius = '8px';
+      alertDiv.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      alertDiv.style.animation = 'fadeIn 0.3s';
+      
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.style.animation = 'fadeOut 0.3s forwards';
+        setTimeout(() => {
+          document.body.removeChild(alertDiv);
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
