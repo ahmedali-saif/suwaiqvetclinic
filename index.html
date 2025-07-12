@@ -364,6 +364,77 @@
       from { opacity: 1; }
       to { opacity: 0; transform: translateY(10px); }
     }
+    
+    /* تحميل جديد */
+    .loader {
+      display: none;
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(0, 121, 107, 0.2);
+      border-radius: 50%;
+      border-top: 5px solid var(--primary-color);
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .welcome-message {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s, visibility 0.5s;
+    }
+    
+    .welcome-content {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      transform: translateY(20px);
+      transition: transform 0.5s;
+    }
+    
+    .welcome-message.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .welcome-message.show .welcome-content {
+      transform: translateY(0);
+    }
+    
+    .welcome-content h3 {
+      color: var(--primary-color);
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+    
+    .welcome-content p {
+      margin-bottom: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+    
+    .welcome-content i {
+      font-size: 60px;
+      color: var(--primary-color);
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -440,6 +511,17 @@
         <i class="fas fa-shield-alt"></i> نظام الدخول الآمن يحمي بياناتك باستخدام تقنيات التشفير المتقدمة
       </div>
     </form>
+    
+    <div class="loader" id="loader"></div>
+  </div>
+  
+  <div class="welcome-message" id="welcomeMessage">
+    <div class="welcome-content">
+      <i class="fas fa-check-circle"></i>
+      <h3>مرحبًا بك!</h3>
+      <p>تم تسجيل دخولك بنجاح إلى النظام</p>
+      <p>يتم الآن تحويلك إلى صفحة البيانات...</p>
+    </div>
   </div>
 
   <script>
@@ -496,6 +578,26 @@
     const strengthText = document.getElementById('strengthText');
     const errorMessage = document.getElementById('errorMessage');
     const successMessage = document.getElementById('successMessage');
+    const loader = document.getElementById('loader');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    
+    // 🔊 إنشاء عناصر الصوت ديناميكيًا
+    function createAudioElement(id, src) {
+      const audio = document.createElement('audio');
+      audio.id = id;
+      audio.preload = 'auto';
+      const source = document.createElement('source');
+      source.src = src;
+      source.type = 'audio/mpeg';
+      audio.appendChild(source);
+      document.body.appendChild(audio);
+      return audio;
+    }
+
+    // إنشاء الأصوات
+    const loginSuccessSound = createAudioElement('loginSuccessSound', 'https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3');
+    const loginErrorSound = createAudioElement('loginErrorSound', 'https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3');
+    const passwordChangeSound = createAudioElement('passwordChangeSound', 'https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3');
 
     // 🟢 تسجيل الدخول
     loginForm.addEventListener('submit', function (e) {
@@ -505,16 +607,35 @@
       const users = getUsers();
       
       if (users[username] && users[username].password === password) {
-        // إضافة تأثير قبل التوجيه
-        document.querySelector('.overlay').classList.add('fade-out');
+        // تشغيل صوت النجاح
+        loginSuccessSound.play();
+        
+        // إظهار رسالة الترحيب
+        welcomeMessage.classList.add('show');
+        
+        // إخفاء النموذج وإظهار التحميل
+        document.querySelector('.overlay').style.opacity = '0.3';
+        loader.style.display = 'block';
+        
         setTimeout(() => {
+          // إخفاء رسالة الترحيب
+          welcomeMessage.classList.remove('show');
+          
+          // إخفاء التحميل وإعادة النموذج
+          loader.style.display = 'none';
+          document.querySelector('.overlay').style.opacity = '1';
+          
           // مسح بيانات الإدخال
           document.getElementById('username').value = '';
           document.getElementById('password').value = '';
           
+          // الانتقال إلى الصفحة
           window.location.href = users[username].url;
-        }, 500);
+        }, 3000);
       } else {
+        // تشغيل صوت الخطأ
+        loginErrorSound.play();
+        
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
         
@@ -542,6 +663,9 @@
           newPasswordField.focus();
         }, 300);
       } else {
+        // تشغيل صوت الخطأ
+        loginErrorSound.play();
+        
         errorMessage.style.display = 'block';
         successMessage.style.display = 'none';
         
@@ -622,6 +746,9 @@
         // حفظ التغييرات في localStorage
         saveUsers(users);
         
+        // تشغيل صوت تغيير كلمة المرور بنجاح
+        passwordChangeSound.play();
+        
         // إظهار رسالة النجاح
         successMessage.style.display = 'block';
         errorMessage.style.display = 'none';
@@ -643,7 +770,7 @@
           document.getElementById('password').value = '';
         }, 2000);
         
-        // إرسال إلى Google Sheets (استبدل بالرابط الفعلي للـ Web App)
+        // إرسال إلى Google Sheets
         fetch("https://script.google.com/macros/s/AKfycbwZq9zNZOlLJHst6wiHtHtQoeA74cnQ8Vjv3iVr1v2vOuLKkaFY2RRYy0EzwotBtEsd/exec", {
           method: "POST",
           body: new URLSearchParams({
